@@ -203,14 +203,23 @@ function renderAll() {
   renderReceipt();
 }
 
+// Every cart action ends here. A payment message describes the OLD total
+// (e.g. "at least ₱55.00"), so it must go when the total changes. An
+// empty cart disables the field, so its old amount is cleared too.
+function onCartChanged() {
+  renderCart();
+  renderPayment();
+  setPaymentMessage("");
+  if (cart.length === 0) els.cashInput.value = "";
+}
+
 // ---------- Events (one listener per area, using data-action) ----------
 els.productList.addEventListener("click", (event) => {
   const btn = event.target.closest("button[data-action='add']");
   if (!btn || isLocked()) return;
   const product = PRODUCTS.find((p) => p.id === btn.dataset.id);
   cart = L.addToCart(cart, product);
-  renderCart();
-  renderPayment();
+  onCartChanged();
   showAdded(product.name);
 });
 
@@ -221,8 +230,7 @@ els.cartBody.addEventListener("click", (event) => {
   if (btn.dataset.action === "increase") cart = L.increaseQty(cart, id);
   if (btn.dataset.action === "decrease") cart = L.decreaseQty(cart, id);
   if (btn.dataset.action === "remove") cart = L.removeItem(cart, id);
-  renderCart();
-  renderPayment();
+  onCartChanged();
 });
 
 // An old error should not stay on screen while the cashier is retyping.

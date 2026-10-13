@@ -166,3 +166,35 @@ Also in this commit: removed the thick mustard left border on product cards (des
 **Evaluation (draft):** Correct for the rules; tests and browser agree. Partially complete UX: problems (2) and (3) found during the run.
 
 **Modifications (draft):** None yet; Step 6 fixes one real problem.
+
+---
+
+## Entry 7 — Step 6 (two real bugs, two commits)
+
+**Step / commits:**
+- `Fix application error: stop the page scrolling sideways on narrow screens`
+- `Fix application error: clear the old payment message when the cart changes`
+
+**Prompt used:** "keep the bug for Step 6..." (after Step 2), then "Proceed to Step 6 ... also want #3 fixed..."
+
+**Purpose:** Fix real bugs found while building, using root-cause debugging (superpowers:systematic-debugging), not invented ones.
+
+**AI response — bug 1 (found while checking Step 2 in a narrow Browser pane):**
+- Reproduced at 375px phone width with items in the cart: page was 524px wide, so it scrolled sideways and cut off receipt amounts.
+- Measured instead of guessing: the one-column grid track was `507.487px` = the minimum width of the right column; inside it the payment row needed 458px (cash field 282px + no-wrap button 163px) and the 5-column cart table about 410px.
+- Root cause: in the narrow-screen media query the grid used `1fr`, which in CSS grid means "never narrower than the widest content".
+- Tested the first idea live before editing (`minmax(0, 1fr)`): page shrank to 435px but the cart table still stuck out, so the cause has two parts.
+- Fix: `minmax(0, 1fr)` for the column + a `.table-scroll` wrapper (overflow-x: auto) around the cart and receipt tables.
+- Verify: at 375px page width = 375px with cart and with receipt, all receipt amounts visible; at 1366×768 layout unchanged (834px + 460px columns, no scroll); 41/41 tests pass. (A first re-check still showed 524px because the browser was serving cached old files; reloading fresh copies confirmed the fix.)
+
+**AI response — bug 3 (found while running the validation table in Step 5):**
+- Reproduced: Burger (₱55.00), pay 50 → "Insufficient payment. Please enter at least ₱55.00."; add Soda → total ₱80.00 but the message still said ₱55.00; empty the cart → field disabled but old amount and message still shown.
+- Root cause: the payment message was only cleared on typing in the cash field and on New Transaction; the cart handlers never cleared it, so a message about an old total outlived that total.
+- Fix: one `onCartChanged()` used by Add, +, −, Remove: redraws cart and payment, clears the message, and clears the amount when the cart becomes empty.
+- Verify: same steps → message cleared after adding Soda; re-submitting 50 now says "at least ₱80.00"; paying 100 still gives change ₱20.00; emptying the cart clears field and message. No automated test: this is DOM behaviour and logic.js did not change (41/41 still pass).
+
+**Not fixed (documented as a known limitation):** the number field silently drops letters, so "12a" is submitted as 12.
+
+**Evaluation (draft):** Correct. Both fixes address the measured root cause and were checked before and after.
+
+**Modifications (draft):** I chose to keep bug 1 for this step instead of fixing it in Step 2, and asked for bug 3 to be fixed too.
