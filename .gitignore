@@ -9,6 +9,7 @@ __pycache__/
 *.db
 
 # Editor and OS files
+.claude/
 .vscode/
 .idea/
 Thumbs.db

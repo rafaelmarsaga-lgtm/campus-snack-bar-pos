@@ -1,1 +1,236 @@
-/* SnackStop styles. Filled in Step 2. */
+/* SnackStop — counter-ticket look: steel-grey counter, white tickets,
+   ketchup-red actions, mustard total band. System fonts only (works offline). */
+
+:root {
+  /* Colors */
+  --counter: #E9EAE6;      /* page background, like a steel counter */
+  --ticket: #FFFFFF;       /* panels and cards */
+  --ink: #1F1A17;          /* main text */
+  --ink-soft: #5E5650;     /* secondary text (7:1 on white) */
+  --line: #D6D3CD;         /* borders and dividers */
+  --ketchup: #C8321E;      /* primary action buttons (5.3:1 with white) */
+  --ketchup-dark: #A32716; /* hover/active */
+  --mustard: #F2B705;      /* total band */
+  --success: #1F7A3A;      /* payment success */
+  --success-bg: #E7F4EA;
+  --error: #A4161A;        /* validation errors */
+  --error-bg: #FDECEC;
+  --focus: #1F5FBF;        /* keyboard focus ring, distinct from red */
+  --disabled: #B9B5AF;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Shape and type */
+  --radius: 10px;
+  --radius-sm: 6px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--counter);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+h1, h2, h3, p { margin: 0; }
+
+/* Money lines up in columns when every digit is the same width. */
+.num { font-variant-numeric: tabular-nums; }
+
+/* ---------- Header ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  background: var(--ink);
+  color: #FFFFFF;
+}
+.brand { font-size: 1.25rem; font-weight: 700; }
+.txn { font-size: 1rem; color: #E6E1DC; }
+.txn strong { color: #FFFFFF; font-size: 1.1rem; margin-left: var(--space-2); }
+
+/* ---------- Layout: products left, order + payment right ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 460px;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  max-width: 1440px;
+  margin: 0 auto;
+}
+.side { display: flex; flex-direction: column; gap: var(--space-5); }
+
+.panel {
+  background: var(--ticket);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+}
+.panel h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: var(--space-4); }
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+.added { color: var(--success); font-weight: 600; min-height: 1.5em; }
+
+/* ---------- Products ---------- */
+.product-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.product-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-left: 6px solid var(--mustard);
+  border-radius: var(--radius-sm);
+}
+.product-name { font-size: 1.05rem; font-weight: 600; min-height: 3em; }
+.product-price { font-size: 1.6rem; font-weight: 700; }
+
+/* ---------- Buttons ---------- */
+.btn {
+  font: inherit;
+  font-weight: 700;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  transition: background-color 150ms ease;
+}
+.btn:disabled { background: var(--disabled); color: #FFFFFF; cursor: not-allowed; }
+
+.btn-add, .btn-pay, .btn-new { background: var(--ketchup); color: #FFFFFF; }
+.btn-add:hover:not(:disabled),
+.btn-pay:hover:not(:disabled),
+.btn-new:hover:not(:disabled) { background: var(--ketchup-dark); }
+.btn-add { width: 100%; font-size: 1.05rem; min-height: 48px; }
+
+/* Small square buttons for − / + / Remove in cart rows (Step 3). */
+.btn-qty {
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  background: var(--ticket);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  font-size: 1.1rem;
+}
+.btn-remove {
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  background: var(--ticket);
+  color: var(--error);
+  border: 1px solid var(--line);
+  font-weight: 600;
+}
+
+/* Visible keyboard focus on every control. */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ---------- Order Summary ---------- */
+.cart { width: 100%; border-collapse: collapse; }
+.cart th {
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  padding: var(--space-2) var(--space-1);
+  border-bottom: 2px solid var(--line);
+}
+.cart td {
+  padding: var(--space-2) var(--space-1);
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.cart .col-qty { text-align: center; }
+.cart .col-money { text-align: right; }
+.cart .col-remove { text-align: right; }
+
+.empty {
+  padding: var(--space-5) 0;
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+/* The one loud element: the total the cashier reads out. */
+.total-band {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--mustard);
+  border-radius: var(--radius-sm);
+}
+.total-label { font-size: 1.1rem; font-weight: 700; }
+.total-amount { font-size: 2.25rem; font-weight: 800; line-height: 1.1; }
+
+/* ---------- Payment ---------- */
+.field-label { display: block; font-weight: 600; margin-bottom: var(--space-2); }
+.pay-row { display: flex; gap: var(--space-3); }
+.cash-input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 1.4rem;
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+}
+.cash-input:disabled { background: var(--counter); }
+.btn-pay { white-space: nowrap; }
+.hint { font-size: 0.875rem; color: var(--ink-soft); margin-top: var(--space-2); }
+
+.message:empty { display: none; }
+.message {
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  color: var(--error);
+  background: var(--error-bg);
+}
+.message.is-success { color: var(--success); background: var(--success-bg); }
+
+/* ---------- Receipt ---------- */
+.receipt { border-top: 6px solid var(--success); }
+.receipt-body { margin-bottom: var(--space-4); }
+.btn-new { width: 100%; }
+
+/* ---------- Narrow screens: stack the columns ---------- */
+@media (max-width: 1000px) {
+  .layout { grid-template-columns: 1fr; padding: var(--space-4); }
+  .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .topbar { flex-direction: column; align-items: flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+}

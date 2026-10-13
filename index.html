@@ -7,7 +7,107 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <!-- Interface is built in Step 2. -->
+  <!-- 1. Header -->
+  <header class="topbar">
+    <h1 class="brand">SnackStop — Campus Snack Bar POS</h1>
+    <p class="txn">
+      Transaction <strong id="txn-number" class="num">SB-YYYYMMDD-0001</strong>
+    </p>
+  </header>
+
+  <main class="layout">
+    <!-- 2. Products (left column) -->
+    <section class="panel products" aria-labelledby="products-title">
+      <div class="panel-head">
+        <h2 id="products-title">Products</h2>
+        <p id="added-message" class="added" role="status"></p>
+      </div>
+
+      <!-- Static for Step 2; rendered from js/products.js in Step 3. -->
+      <ul id="product-list" class="product-grid">
+        <li class="product-card">
+          <h3 class="product-name">Classic Burger</h3>
+          <p class="product-price num">₱55.00</p>
+          <button type="button" class="btn btn-add">Add</button>
+        </li>
+        <li class="product-card">
+          <h3 class="product-name">Cheeseburger</h3>
+          <p class="product-price num">₱65.00</p>
+          <button type="button" class="btn btn-add">Add</button>
+        </li>
+        <li class="product-card">
+          <h3 class="product-name">Ham Sandwich</h3>
+          <p class="product-price num">₱40.00</p>
+          <button type="button" class="btn btn-add">Add</button>
+        </li>
+        <li class="product-card">
+          <h3 class="product-name">French Fries (Regular)</h3>
+          <p class="product-price num">₱45.00</p>
+          <button type="button" class="btn btn-add">Add</button>
+        </li>
+        <li class="product-card">
+          <h3 class="product-name">Nachos</h3>
+          <p class="product-price num">₱50.00</p>
+          <button type="button" class="btn btn-add">Add</button>
+        </li>
+        <li class="product-card">
+          <h3 class="product-name">Soda (Can)</h3>
+          <p class="product-price num">₱25.00</p>
+          <button type="button" class="btn btn-add">Add</button>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Right column: order summary, payment, receipt -->
+    <div class="side">
+      <!-- 3. Order Summary -->
+      <section class="panel order" aria-labelledby="order-title">
+        <h2 id="order-title">Order Summary</h2>
+        <table class="cart">
+          <thead>
+            <tr>
+              <th scope="col">Item</th>
+              <th scope="col" class="col-qty">Qty</th>
+              <th scope="col" class="col-money">Unit Price</th>
+              <th scope="col" class="col-money">Subtotal</th>
+              <th scope="col" class="col-remove">Remove</th>
+            </tr>
+          </thead>
+          <tbody id="cart-body"></tbody>
+        </table>
+        <p id="cart-empty" class="empty">Your cart is empty.</p>
+        <div class="total-band">
+          <span class="total-label">Total</span>
+          <strong id="cart-total" class="total-amount num">₱0.00</strong>
+        </div>
+      </section>
+
+      <!-- 4. Payment -->
+      <section class="panel payment" aria-labelledby="payment-title">
+        <h2 id="payment-title">Payment</h2>
+        <!-- novalidate: our own messages replace the browser's pop-ups. -->
+        <form id="payment-form" class="pay-form" novalidate>
+          <label for="cash-input" class="field-label">Cash received (₱)</label>
+          <div class="pay-row">
+            <input id="cash-input" name="cash" class="cash-input num"
+                   type="number" step="0.01" min="0" inputmode="decimal"
+                   placeholder="0.00" autocomplete="off">
+            <button type="submit" id="pay-button" class="btn btn-pay">Confirm Payment</button>
+          </div>
+          <p class="hint">Press Enter to confirm.</p>
+          <p id="payment-message" class="message" role="alert"></p>
+        </form>
+      </section>
+
+      <!-- 5. Receipt (shown after a valid payment, from Step 4) -->
+      <section id="receipt" class="panel receipt" aria-labelledby="receipt-title" hidden>
+        <h2 id="receipt-title">Receipt</h2>
+        <div id="receipt-body" class="receipt-body"></div>
+        <button type="button" id="new-transaction" class="btn btn-new">New Transaction</button>
+      </section>
+    </div>
+  </main>
+
   <script src="js/products.js"></script>
   <script src="js/logic.js"></script>
   <script src="js/app.js"></script>
