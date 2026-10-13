@@ -116,3 +116,21 @@ Plan approved with these notes. Save it as docs/PLAN.md and do Step 1.
 **Evaluation (draft):** Correct. All sections present and readable; static only, no logic.
 
 **Modifications (draft):** None yet.
+
+---
+
+## Entry 4 — Step 3
+
+**Step / commit:** `Implement core functionality: add to cart, change quantity, remove items, and recompute totals`
+
+**Prompt used:** "keep the bug for Step 6... Proceed to Step 3 of docs/PLAN.md." plus my requirements: TDD (show tests failing, then passing) for formatPeso, addToCart, increaseQty, decreaseQty, removeItem, lineSubtotal, cartTotal in integer centavos, cart functions never mutate; products.js with ids p1–p6 and priceCents; app.js renders cards, wires Add/+/−/Remove, shows "Added: <name>", disables − at 1 and + at 99, empty message and ₱0.00, textContent only; no payment logic; no layout changes except wiring. (Full text in chat.)
+
+**Purpose:** Make the cart (Section V features 1–6) work end to end, proven by tests.
+
+**AI response:** Wrote 17 new tests first; RED run: 17 failed with `TypeError: formatPeso is not a function` (1 smoke test passed). Implemented the 7 functions in logic.js (formatPeso built by hand, not toLocaleString, so output is the same on every PC; MAX_QTY = 99); GREEN run: 18/18 pass. products.js holds the 6 products in centavos. app.js keeps `cart` as the only state; each click does `cart = logic(cart)` then `renderCart()`; one click listener per area using `data-action`; all text via textContent. index.html: static cards replaced by an empty list filled from products.js. CSS: small rules for the qty controls. Browser check: Burger ×2 + Soda = ₱135.00, + on Soda → ₱160.00, − on Burger → ₱105.00, Remove both → "Your cart is empty." and ₱0.00; − disabled at qty 1; no console errors.
+
+Also in this commit: removed the thick mustard left border on product cards (design check flagged it as clashing with rounded corners). The narrow-screen horizontal-scroll bug found after Step 2 is deliberately left unfixed for Step 6.
+
+**Evaluation (draft):** Correct. Tests failed for the right reason before the code existed, then passed; browser behaviour matches.
+
+**Modifications (draft):** Asked to keep the layout bug for Step 6 instead of committing the fix now.
