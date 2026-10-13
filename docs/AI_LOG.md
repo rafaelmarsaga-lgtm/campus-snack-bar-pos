@@ -216,3 +216,19 @@ Also in this commit: removed the thick green top border on the receipt panel (de
 **Evaluation (draft):** Correct. Same test count, same browser behaviour; fewer ways for the screen and data to disagree.
 
 **Modifications (draft):** None.
+
+---
+
+## Entry 9 — Step 8
+
+**Step / commit:** `Update documentation: README, testing results, AI log, and project documentation`
+
+**Prompt used:** "Proceed to Step 8 of docs/PLAN.md." plus my requirements: README (what it does, transaction flow, how to run, how to test, file structure); docs/DOCUMENTATION.md from the template with objectives, the 12 features and where each is met, Section VIII AI-use entries (exact prompt, purpose, response, evaluation, modifications), GitHub section with the real `git log --oneline`, design decisions, screenshot placeholders; docs/TESTING.md table from the real tests plus the real test summary; finish this log. Only describe what really happened; leave [SCREENSHOT] placeholders. (Full text in DOCUMENTATION.md section 2.6.)
+
+**Purpose:** Write the submission documentation from what really exists and really happened.
+
+**AI response:** Checked the real state first (`git log --oneline`, the remote, the evidence folder, `node --test` = 41/41) and saw my own commit `80dff6b` only renamed the screenshots, so built on it. Wrote README.md (features, flow, run, test, file tree), docs/TESTING.md (39 automated test rows covering valid, invalid, and edge cases; 14 manual browser tests from Steps 4–7; the known limitation), docs/DOCUMENTATION.md (template structure, 12-feature map, six AI-use sections with exact prompts, both debugging root causes, refactor before/after, GitHub history, design decisions, links to my real screenshots and [SCREENSHOT] placeholders for the GitHub history, test output, and phone view). Documented `node --test` instead of `node --test tests/`, because the folder form really fails on Node 24 (`Cannot find module '...\tests'`).
+
+**Evaluation (draft):** Correct. Every number comes from real output in this session; evaluations and lessons are drafts for me to rewrite.
+
+**Modifications (draft):** [Rafael: what you rewrote]
