@@ -1,0 +1,15 @@
+# Dependencies and environments (none used, kept out just in case)
+node_modules/
+.venv/
+venv/
+__pycache__/
+
+# Secrets and local data
+.env
+*.db
+
+# Editor and OS files
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
