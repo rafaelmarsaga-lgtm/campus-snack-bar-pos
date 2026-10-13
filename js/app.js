@@ -156,7 +156,9 @@ function renderReceiptItems(items) {
     tbody.append(row);
   });
   table.append(thead, tbody);
-  return table;
+  const wrapper = el("div", "table-scroll");
+  wrapper.append(table);
+  return wrapper;
 }
 
 function renderReceipt() {

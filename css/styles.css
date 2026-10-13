@@ -160,6 +160,9 @@ h1, h2, h3, p { margin: 0; }
 }
 
 /* ---------- Order Summary ---------- */
+/* A table cannot shrink below its columns; on a narrow screen it scrolls
+   inside its own box instead of pushing the whole page sideways. */
+.table-scroll { overflow-x: auto; }
 .cart { width: 100%; border-collapse: collapse; }
 .cart th {
   text-align: left;
@@ -245,7 +248,10 @@ h1, h2, h3, p { margin: 0; }
 
 /* ---------- Narrow screens: stack the columns ---------- */
 @media (max-width: 1000px) {
-  .layout { grid-template-columns: 1fr; padding: var(--space-4); }
+  /* minmax(0, 1fr), not 1fr: plain 1fr never gets narrower than its
+     widest content (the cart table, the payment row), so the page grew
+     wider than a phone screen and scrolled sideways. */
+  .layout { grid-template-columns: minmax(0, 1fr); padding: var(--space-4); }
   .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .topbar { flex-direction: column; align-items: flex-start; }
 }
