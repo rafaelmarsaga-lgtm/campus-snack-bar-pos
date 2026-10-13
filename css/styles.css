@@ -229,7 +229,6 @@ h1, h2, h3, p { margin: 0; }
 .message.is-success { color: var(--success); background: var(--success-bg); }
 
 /* ---------- Receipt ---------- */
-.receipt { border-top: 6px solid var(--success); }
 .receipt-body { margin-bottom: var(--space-4); }
 .receipt-store { font-size: 1.1rem; font-weight: 700; margin-bottom: var(--space-2); }
 .receipt-meta, .receipt-totals { margin: 0; }

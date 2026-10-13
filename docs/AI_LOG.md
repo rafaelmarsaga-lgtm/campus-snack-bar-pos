@@ -198,3 +198,21 @@ Also in this commit: removed the thick mustard left border on product cards (des
 **Evaluation (draft):** Correct. Both fixes address the measured root cause and were checked before and after.
 
 **Modifications (draft):** I chose to keep bug 1 for this step instead of fixing it in Step 2, and asked for bug 3 to be fixed too.
+
+---
+
+## Entry 8 — Step 7
+
+**Step / commit:** `Refactor application code: redraw every section from state through one render()`
+
+**Prompt used:** "Proceed to Step 7 of docs/PLAN.md." plus my requirements: tests before, show before code and the problem in 2 lines, change it, tests after with the same count, one full transaction in the browser; behaviour must not change; don't touch tests, messages, or layout; if something else is messier than the planned targets, pick that and say why. (Full text in chat.)
+
+**Purpose:** Make app.js easier to read and harder to break, with no behaviour change.
+
+**AI response:** Reported that the planned constants (MAX_QTY, MAX_PAYMENT_CENTS, STORE_NAME) and a renderAll() already existed from Steps 3–5, so picked the messier part: app.js updated the screen three different ways (renderAll(), a partial onCartChanged(), and direct setPaymentMessage() DOM writes), and the payment message lived only in the page, not in state — the same weakness that caused bug #3. Changes: payment message moved into state (`message`); one `render()` draws every section from state; every handler is "change state → render()"; cart actions go through `updateCart(newCart)`; product cards built once (`buildProducts()`) and `render()` only enables/disables Add, so keyboard focus stays on Add; nested ternary for receipt column classes replaced by a column list; `2000` ms named `ADDED_MESSAGE_MS`; increase/decrease/remove chosen from a lookup object. Tests: 41/41 before and after (`node --test tests/` still fails on Node 24, so `node --test` used). Browser: Add keeps focus on the button; pay 50 → insufficient ₱55.00 with focus in field; add Soda → message cleared, ₱80.00; pay 100 → "Payment successful. Change: ₱20.00", same receipt, everything locked, focus on New Transaction; Enter → SB-20261013-0002, all cleared, focus on first Add; emptying the cart clears field and message; no console errors.
+
+Also in this commit: removed the thick green top border on the receipt panel (design check: accent border clashing with rounded corners). Visual only.
+
+**Evaluation (draft):** Correct. Same test count, same browser behaviour; fewer ways for the screen and data to disagree.
+
+**Modifications (draft):** None.

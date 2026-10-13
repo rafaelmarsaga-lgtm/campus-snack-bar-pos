@@ -8,6 +8,9 @@ const L = window.SnackLogic;
 let cart = [];
 let seq = 1;          // transaction counter for this browser session
 let receipt = null;   // null while taking an order; an object once paid
+let message = null;   // payment message: { text, kind } or null
+
+const ADDED_MESSAGE_MS = 2000; // how long "Added: <name>" stays visible
 let addedTimer = null;
 
 const els = {
@@ -56,18 +59,23 @@ function renderHeader() {
 }
 
 // ---------- Products ----------
-function renderProducts() {
-  els.productList.replaceChildren();
+// Built once: the product list never changes. Rebuilding the cards on
+// every redraw would also throw away keyboard focus on the Add button.
+function buildProducts() {
   PRODUCTS.forEach((product) => {
     const card = el("li", "product-card");
-    const add = button("btn-add", "Add", "add", product.id, "Add " + product.name);
-    add.disabled = isLocked();
     card.append(
       el("h3", "product-name", product.name),
       el("p", "product-price num", L.formatPeso(product.priceCents)),
-      add
+      button("btn-add", "Add", "add", product.id, "Add " + product.name)
     );
     els.productList.append(card);
+  });
+}
+
+function renderProducts() {
+  els.productList.querySelectorAll("button").forEach((add) => {
+    add.disabled = isLocked();
   });
 }
 
@@ -108,7 +116,7 @@ function renderCart() {
 function showAdded(name) {
   els.addedMessage.textContent = "Added: " + name;
   clearTimeout(addedTimer);
-  addedTimer = setTimeout(() => { els.addedMessage.textContent = ""; }, 2000);
+  addedTimer = setTimeout(() => { els.addedMessage.textContent = ""; }, ADDED_MESSAGE_MS);
 }
 
 // ---------- Payment ----------
@@ -120,10 +128,10 @@ function renderPayment() {
   els.payButton.disabled = !canPay;
 }
 
-// kind: "error" (red) or "success" (green). Empty text hides the box.
-function setPaymentMessage(text, kind) {
-  els.paymentMessage.textContent = text;
-  els.paymentMessage.classList.toggle("is-success", kind === "success");
+// message.kind is "error" (red) or "success" (green). Empty text hides the box.
+function renderMessage() {
+  els.paymentMessage.textContent = message ? message.text : "";
+  els.paymentMessage.classList.toggle("is-success", Boolean(message) && message.kind === "success");
 }
 
 // ---------- Receipt ----------
@@ -136,8 +144,14 @@ function receiptLine(label, value, className) {
 function renderReceiptItems(items) {
   const table = el("table", "cart receipt-items");
   const head = el("tr");
-  ["Item", "Qty", "Unit Price", "Subtotal"].forEach((title, i) => {
-    const th = el("th", i === 0 ? "" : i === 1 ? "col-qty" : "col-money", title);
+  const columns = [
+    ["Item", ""],
+    ["Qty", "col-qty"],
+    ["Unit Price", "col-money"],
+    ["Subtotal", "col-money"],
+  ];
+  columns.forEach(([title, className]) => {
+    const th = el("th", className, title);
     th.scope = "col";
     head.append(th);
   });
@@ -193,24 +207,25 @@ function renderReceipt() {
   );
 }
 
-// Redraw everything from state. Cheap for 6 products, and it means the
-// screen can never disagree with the data.
-function renderAll() {
+// The ONE way the screen is updated: every handler changes state, then
+// calls render(). No handler has to remember which parts to redraw.
+function render() {
   renderHeader();
   renderProducts();
   renderCart();
   renderPayment();
+  renderMessage();
   renderReceipt();
 }
 
 // Every cart action ends here. A payment message describes the OLD total
 // (e.g. "at least ₱55.00"), so it must go when the total changes. An
 // empty cart disables the field, so its old amount is cleared too.
-function onCartChanged() {
-  renderCart();
-  renderPayment();
-  setPaymentMessage("");
+function updateCart(newCart) {
+  cart = newCart;
+  message = null;
   if (cart.length === 0) els.cashInput.value = "";
+  render();
 }
 
 // ---------- Events (one listener per area, using data-action) ----------
@@ -218,8 +233,7 @@ els.productList.addEventListener("click", (event) => {
   const btn = event.target.closest("button[data-action='add']");
   if (!btn || isLocked()) return;
   const product = PRODUCTS.find((p) => p.id === btn.dataset.id);
-  cart = L.addToCart(cart, product);
-  onCartChanged();
+  updateCart(L.addToCart(cart, product));
   showAdded(product.name);
 });
 
@@ -227,14 +241,19 @@ els.cartBody.addEventListener("click", (event) => {
   const btn = event.target.closest("button[data-action]");
   if (!btn || isLocked()) return;
   const id = btn.dataset.id;
-  if (btn.dataset.action === "increase") cart = L.increaseQty(cart, id);
-  if (btn.dataset.action === "decrease") cart = L.decreaseQty(cart, id);
-  if (btn.dataset.action === "remove") cart = L.removeItem(cart, id);
-  onCartChanged();
+  const actions = {
+    increase: L.increaseQty,
+    decrease: L.decreaseQty,
+    remove: L.removeItem,
+  };
+  updateCart(actions[btn.dataset.action](cart, id));
 });
 
 // An old error should not stay on screen while the cashier is retyping.
-els.cashInput.addEventListener("input", () => setPaymentMessage(""));
+els.cashInput.addEventListener("input", () => {
+  message = null;
+  renderMessage();
+});
 
 // "submit" fires for both the Confirm Payment button and the Enter key.
 els.paymentForm.addEventListener("submit", (event) => {
@@ -243,21 +262,26 @@ els.paymentForm.addEventListener("submit", (event) => {
   // Second check: the disabled button already blocks this, but a stale
   // button state must never let an empty sale through.
   if (cart.length === 0) {
-    setPaymentMessage("Your cart is empty.", "error");
+    message = { text: "Your cart is empty.", kind: "error" };
+    render();
     return;
   }
 
   const result = L.validatePayment(els.cashInput.value, L.cartTotal(cart));
   if (!result.ok) {
-    setPaymentMessage(result.message, "error");
+    message = { text: result.message, kind: "error" };
+    render();
     els.cashInput.focus();
     return;
   }
 
   const now = new Date();
   receipt = L.buildReceipt(cart, result.paidCents, L.nextTransactionNumber(now, seq), now);
-  setPaymentMessage("Payment successful. Change: " + L.formatPeso(receipt.changeCents), "success");
-  renderAll();
+  message = {
+    text: "Payment successful. Change: " + L.formatPeso(receipt.changeCents),
+    kind: "success",
+  };
+  render();
   // Move focus so the cashier can press Enter to start the next sale.
   els.newTransaction.focus();
   els.receipt.scrollIntoView({ block: "nearest" });
@@ -267,11 +291,12 @@ els.newTransaction.addEventListener("click", () => {
   cart = [];
   receipt = null;
   seq += 1;
+  message = null;
   els.cashInput.value = "";
-  setPaymentMessage("");
   els.addedMessage.textContent = "";
-  renderAll();
+  render();
   els.productList.querySelector("button").focus();
 });
 
-renderAll();
+buildProducts();
+render();
