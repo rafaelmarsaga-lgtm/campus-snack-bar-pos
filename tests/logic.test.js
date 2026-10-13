@@ -170,3 +170,36 @@ test("validatePayment accepts an amount above the total", () => {
 test("validatePayment accepts the exact total", () => {
   assert.deepEqual(validatePayment("55", 5500), { ok: true, paidCents: 5500 });
 });
+
+// ---------- validatePayment: every rule (Step 5) ----------
+const INVALID = "Please enter a valid payment amount.";
+const INSUFFICIENT_55 = "Insufficient payment. Please enter at least ₱55.00.";
+
+const invalidInputs = [
+  ["blank", ""],
+  ["spaces only", "   "],
+  ["letters", "abc"],
+  ["digits followed by a letter", "12a"],
+  ["a negative amount", "-5"],
+  ["more than 2 decimal places", "50.123"],
+  ["scientific notation", "1e3"],
+  ["more than ₱100,000.00", "100000.01"],
+];
+
+invalidInputs.forEach(([label, input]) => {
+  test(`validatePayment rejects ${label} (${JSON.stringify(input)})`, () => {
+    assert.deepEqual(validatePayment(input, 5500), { ok: false, message: INVALID });
+  });
+});
+
+test("validatePayment rejects less than the total with the total in the message", () => {
+  assert.deepEqual(validatePayment("50", 5500), { ok: false, message: INSUFFICIENT_55 });
+});
+
+test("validatePayment treats 0 as insufficient, not invalid", () => {
+  assert.deepEqual(validatePayment("0", 5500), { ok: false, message: INSUFFICIENT_55 });
+});
+
+test("validatePayment accepts exactly ₱100,000.00 (the upper limit)", () => {
+  assert.deepEqual(validatePayment("100000", 5500), { ok: true, paidCents: 10000000 });
+});

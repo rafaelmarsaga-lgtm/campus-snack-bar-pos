@@ -150,3 +150,19 @@ Also in this commit: removed the thick mustard left border on product cards (des
 **Evaluation (draft):** Correct for the happy path. Known gap left for Step 5: with an empty cart the total is ₱0.00, so paying 0 is accepted and prints an empty receipt; Step 5 disables payment for an empty cart.
 
 **Modifications (draft):** None.
+
+---
+
+## Entry 6 — Step 5
+
+**Step / commit:** `Add input validation: reject blank, non-numeric, negative, over-limit, and insufficient payments`
+
+**Prompt used:** "Proceed to Step 5 of docs/PLAN.md." plus my requirements: write every Step 5 test first (blank, spaces, "abc", "12a", "-5", "50.123", "1e3", "100000.01" → invalid; "50" and "0" with ₱55.00 total → insufficient; "55" and "100000" → ok), show failing then passing; UI: message in role="alert", clear on field change, keep focus, disable payment on empty cart, re-check empty cart in submit; run the validation table in the browser and report problems without fixing them. (Full text in chat.)
+
+**Purpose:** Reject every invalid payment with a clear message (Section V feature 8).
+
+**AI response:** Added 11 tests. RED run: 3 failed ("100000.01" was accepted; "50" and "0" got the generic message instead of "Insufficient payment…"); the other 8 invalid-input tests passed immediately because Step 4's strict parsePaymentToCents already rejects them — reported honestly, tests kept as regression guards. Implemented the ₱100,000.00 limit (MAX_PAYMENT_CENTS) and the insufficient message with the formatted total. GREEN: 41/41. UI: payment field and button disabled while the cart is empty; message cleared on `input`; focus stays in the field after an error; submit handler re-checks for an empty cart. Ran 13 cases by typing in the browser (table in chat). Problems found and NOT fixed (for Step 6): (1) layout scrolls sideways on narrow screens (known since Step 2); (2) the number field silently drops letters, so typing "12a" submits 12; (3) an old payment message and amount stay on screen after the cart changes (e.g. after removing the last item).
+
+**Evaluation (draft):** Correct for the rules; tests and browser agree. Partially complete UX: problems (2) and (3) found during the run.
+
+**Modifications (draft):** None yet; Step 6 fixes one real problem.

@@ -63,14 +63,25 @@ function parsePaymentToCents(text) {
   return pesos * 100 + centavos;
 }
 
-// Happy path for Step 4; the full rule list (messages for each case)
-// is added in Step 5.
+// Upper limit stops typos like 5000000 from being accepted as cash.
+const MAX_PAYMENT_CENTS = 10000000; // ₱100,000.00
+const MSG_INVALID = "Please enter a valid payment amount.";
+
+// Rules, in order: must be a plain amount (this also rejects blank,
+// letters, negatives, "1e3", and 3+ decimals), must not exceed the
+// limit, must cover the total.
 function validatePayment(text, totalCents) {
   const paidCents = parsePaymentToCents(text);
-  if (paidCents !== null && paidCents >= totalCents) {
-    return { ok: true, paidCents };
+  if (paidCents === null || paidCents > MAX_PAYMENT_CENTS) {
+    return { ok: false, message: MSG_INVALID };
   }
-  return { ok: false, message: "Please enter a valid payment amount." };
+  if (paidCents < totalCents) {
+    return {
+      ok: false,
+      message: "Insufficient payment. Please enter at least " + formatPeso(totalCents) + ".",
+    };
+  }
+  return { ok: true, paidCents };
 }
 
 function computeChange(paidCents, totalCents) {

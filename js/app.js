@@ -112,9 +112,12 @@ function showAdded(name) {
 }
 
 // ---------- Payment ----------
+// Payment is only possible when there is something to pay for and the
+// sale is not already finished.
 function renderPayment() {
-  els.cashInput.disabled = isLocked();
-  els.payButton.disabled = isLocked();
+  const canPay = !isLocked() && cart.length > 0;
+  els.cashInput.disabled = !canPay;
+  els.payButton.disabled = !canPay;
 }
 
 // kind: "error" (red) or "success" (green). Empty text hides the box.
@@ -205,6 +208,7 @@ els.productList.addEventListener("click", (event) => {
   const product = PRODUCTS.find((p) => p.id === btn.dataset.id);
   cart = L.addToCart(cart, product);
   renderCart();
+  renderPayment();
   showAdded(product.name);
 });
 
@@ -216,12 +220,22 @@ els.cartBody.addEventListener("click", (event) => {
   if (btn.dataset.action === "decrease") cart = L.decreaseQty(cart, id);
   if (btn.dataset.action === "remove") cart = L.removeItem(cart, id);
   renderCart();
+  renderPayment();
 });
+
+// An old error should not stay on screen while the cashier is retyping.
+els.cashInput.addEventListener("input", () => setPaymentMessage(""));
 
 // "submit" fires for both the Confirm Payment button and the Enter key.
 els.paymentForm.addEventListener("submit", (event) => {
   event.preventDefault();
   if (isLocked()) return;
+  // Second check: the disabled button already blocks this, but a stale
+  // button state must never let an empty sale through.
+  if (cart.length === 0) {
+    setPaymentMessage("Your cart is empty.", "error");
+    return;
+  }
 
   const result = L.validatePayment(els.cashInput.value, L.cartTotal(cart));
   if (!result.ok) {
