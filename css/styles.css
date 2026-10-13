@@ -228,6 +228,19 @@ h1, h2, h3, p { margin: 0; }
 /* ---------- Receipt ---------- */
 .receipt { border-top: 6px solid var(--success); }
 .receipt-body { margin-bottom: var(--space-4); }
+.receipt-store { font-size: 1.1rem; font-weight: 700; margin-bottom: var(--space-2); }
+.receipt-meta, .receipt-totals { margin: 0; }
+.receipt-meta { margin-bottom: var(--space-3); color: var(--ink-soft); }
+.receipt-line {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-1) 0;
+}
+.receipt-line dd { margin: 0; text-align: right; }
+.receipt-items { margin-bottom: var(--space-3); }
+.receipt-line.is-total { font-weight: 700; border-top: 2px solid var(--line); padding-top: var(--space-2); }
+.receipt-line.is-change { font-weight: 700; font-size: 1.15rem; color: var(--success); }
 .btn-new { width: 100%; }
 
 /* ---------- Narrow screens: stack the columns ---------- */

@@ -134,3 +134,19 @@ Also in this commit: removed the thick mustard left border on product cards (des
 **Evaluation (draft):** Correct. Tests failed for the right reason before the code existed, then passed; browser behaviour matches.
 
 **Modifications (draft):** Asked to keep the layout bug for Step 6 instead of committing the fix now.
+
+---
+
+## Entry 5 — Step 4
+
+**Step / commit:** `Implement core functionality: cash payment, change, confirmation, receipt, and new transaction`
+
+**Prompt used:** "Proceed to Step 4 of docs/PLAN.md." plus my requirements: TDD for parsePaymentToCents, computeChange, nextTransactionNumber, buildReceipt, and the happy path of validatePayment; wire Confirm Payment and Enter; show "Payment successful. Change: ₱X.XX" then the receipt (store name, SB-YYYYMMDD-NNNN, date and time, items with qty/unit price/subtotal, total, paid, change); lock Add, +, −, Remove and the payment form while the receipt shows; New Transaction clears everything and increases the number. Only happy-path validation; don't change cart behaviour. (Full text in chat.)
+
+**Purpose:** Complete one full transaction from payment to receipt to the next transaction (Section V features 7, 9–12).
+
+**AI response:** Wrote 12 new tests first; RED run: 12 failed with `TypeError: parsePaymentToCents is not a function`, the 18 cart tests still passed. Implemented parsePaymentToCents (regex on the text, no parseFloat, so "55.05" is exactly 5505), validatePayment (happy path only), computeChange, nextTransactionNumber (zero-padded date and 4-digit counter), buildReceipt (a snapshot object). GREEN run: 30/30 pass. app.js: added `seq` and `receipt` state, `isLocked()` = receipt is shown, one `renderAll()` that redraws header, products, cart, payment and receipt from state; the form's submit event covers both the button and Enter; focus moves to New Transaction after paying, and to the first Add button after a new transaction. Browser check: Burger + Soda = ₱80.00, typed 100 + Enter → "Payment successful. Change: ₱20.00", receipt shows SB-20261013-0001, date/time, both items, Total ₱80.00, Amount paid ₱100.00, Change ₱20.00; all Add/+/−/Remove, cash field and Confirm button disabled; New Transaction → empty cart, ₱0.00, blank field, no message, receipt hidden, header SB-20261013-0002; no console errors.
+
+**Evaluation (draft):** Correct for the happy path. Known gap left for Step 5: with an empty cart the total is ₱0.00, so paying 0 is accepted and prints an empty receipt; Step 5 disables payment for an empty cart.
+
+**Modifications (draft):** None.

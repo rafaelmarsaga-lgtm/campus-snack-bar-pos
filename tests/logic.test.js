@@ -4,6 +4,8 @@ const logic = require("../js/logic.js");
 const {
   formatPeso, addToCart, increaseQty, decreaseQty,
   removeItem, lineSubtotal, cartTotal,
+  parsePaymentToCents, validatePayment, computeChange,
+  nextTransactionNumber, buildReceipt,
 } = logic;
 
 // Test products (same shape as js/products.js).
@@ -101,4 +103,70 @@ test("cartTotal of an empty cart is 0", () => {
 test("cartTotal adds all subtotals", () => {
   const cart = [{ ...BURGER, qty: 2 }, { ...SODA, qty: 1 }];
   assert.equal(cartTotal(cart), 13500);
+});
+
+// ---------- parsePaymentToCents ----------
+test("parsePaymentToCents reads whole pesos", () => {
+  assert.equal(parsePaymentToCents("100"), 10000);
+});
+
+test("parsePaymentToCents reads one decimal place as tens of centavos", () => {
+  assert.equal(parsePaymentToCents("55.5"), 5550);
+});
+
+test("parsePaymentToCents reads two decimal places exactly", () => {
+  assert.equal(parsePaymentToCents("55.05"), 5505);
+});
+
+test("parsePaymentToCents ignores spaces around the number", () => {
+  assert.equal(parsePaymentToCents(" 60 "), 6000);
+});
+
+// ---------- computeChange ----------
+test("computeChange is amount paid minus total", () => {
+  assert.equal(computeChange(10000, 5500), 4500);
+});
+
+test("computeChange is 0 when paying the exact amount", () => {
+  assert.equal(computeChange(5500, 5500), 0);
+});
+
+// ---------- nextTransactionNumber ----------
+test("nextTransactionNumber uses SB-YYYYMMDD-NNNN", () => {
+  assert.equal(nextTransactionNumber(new Date(2026, 9, 13), 1), "SB-20261013-0001");
+});
+
+test("nextTransactionNumber pads the counter to 4 digits", () => {
+  assert.equal(nextTransactionNumber(new Date(2026, 9, 13), 12), "SB-20261013-0012");
+});
+
+test("nextTransactionNumber pads single-digit months and days", () => {
+  assert.equal(nextTransactionNumber(new Date(2026, 0, 5), 3), "SB-20260105-0003");
+});
+
+// ---------- buildReceipt ----------
+test("buildReceipt lists items, totals, paid amount, and change", () => {
+  const date = new Date(2026, 9, 13, 14, 30);
+  const cart = [{ ...BURGER, qty: 2 }, { ...SODA, qty: 1 }];
+  assert.deepEqual(buildReceipt(cart, 20000, "SB-20261013-0001", date), {
+    storeName: "SnackStop — Campus Snack Bar",
+    txnNo: "SB-20261013-0001",
+    date,
+    items: [
+      { name: "Classic Burger", qty: 2, priceCents: 5500, subtotalCents: 11000 },
+      { name: "Soda (Can)", qty: 1, priceCents: 2500, subtotalCents: 2500 },
+    ],
+    totalCents: 13500,
+    paidCents: 20000,
+    changeCents: 6500,
+  });
+});
+
+// ---------- validatePayment (happy path; full rules in Step 5) ----------
+test("validatePayment accepts an amount above the total", () => {
+  assert.deepEqual(validatePayment("100", 5500), { ok: true, paidCents: 10000 });
+});
+
+test("validatePayment accepts the exact total", () => {
+  assert.deepEqual(validatePayment("55", 5500), { ok: true, paidCents: 5500 });
 });
